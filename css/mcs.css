@@ -2,7 +2,68 @@
    width: 100%;
    height: 100%;
    overflow: auto;
-   background-color: #444d6a;
    font-family: "Lucida Console", Monaco, monospace;
 }
 
+/* DEBUG */
+.top-bar {
+   background-color: black;
+}
+.context-pane {
+   background-color: green;
+}
+.page-pane {
+   background-color: blue;
+}
+.hidden-pane {
+   background-color: yellow;
+}
+.footer {
+   background-color: grey;
+}
+
+/* Top bar */
+.top-bar {
+   padding: 10px;
+   display: flex;
+   flex-wrap: wrap;
+   justify-content: space-evenly;
+}
+
+/* middle */
+.middle {
+   height: 100%;
+   width: 100%;
+   display: flex;
+}
+
+.context-pane,
+.page-pane,
+.hidden-pane {
+   height: 100%;
+}
+
+.context-pane,
+.hidden-pane {
+   flex: 1;
+}
+
+.context-pane {
+}
+
+.page-pane {
+   flex: 4;
+}
+
+.hidden-pane {
+}
+
+/* footer */
+.footer {
+   height: 20px;
+}
+
+/* Boxes */
+.box.selected {
+   outline: 2px solid red;
+}
