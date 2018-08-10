@@ -30,6 +30,10 @@
    justify-content: space-evenly;
 }
 
+.top-bar #background-upload {
+   display: none;
+}
+
 /* middle */
 .middle {
    height: 100%;
@@ -53,6 +57,11 @@
 
 .page-pane {
    flex: 4;
+}
+
+.page-pane .background-image {
+   display: none;
+   width: 100%;
 }
 
 .hidden-pane {

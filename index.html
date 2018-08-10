@@ -11,6 +11,10 @@
          <div class='page-content page-center'>
             <div class='top-bar'>
                <button class='add-box-button' onClick='addBox()'>Add Box</button>
+
+               <input type="file" id='background-upload' accept='image/*' />
+               <button class='choose-background-button' onClick='clickUpload()'>Choose Background</button>
+
                <button class='load-button' onClick='load()'>Load</button>
                <button class='download-button' onClick='download()'>Download</button>
                <button class='view-mode-button' onClick='viewMode()'>View Mode</button>
@@ -23,6 +27,7 @@
                </div>
 
                <div class='page-pane'>
+                  <img class='background-image' src=''>
                </div>
 
                <div class='hidden-pane'>

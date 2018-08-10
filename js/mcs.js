@@ -2,6 +2,36 @@
 
 var mcs = mcs || {};
 
+$(document).ready(function() {
+   document.getElementById('background-upload').addEventListener('change', handleFileSelect, false);
+});
+
+function clickUpload() {
+   $('#background-upload').click();
+}
+
+function handleFileSelect() {
+   var files = document.getElementById('background-upload').files;
+
+   if (files.length == 0) {
+      return;
+   }
+
+   // TODO(eriq): Handle multiple files.
+   if (files.length > 1) {
+      return;
+   }
+
+   var file = files[0];
+
+   var reader = new FileReader();
+   reader.onload = function(event) {
+      $('.background-image').show().attr('src', event.target.result);
+   };
+
+   reader.readAsDataURL(file);
+}
+
 function addBox() {
    mcs.boxes = mcs.boxes || []
 
@@ -12,6 +42,8 @@ function addBox() {
    box.setAttribute('type', 'text');
    box.setAttribute('data-id', id);
    box.setAttribute('data-name', '');
+   box.setAttribute('data-value', '');
+   box.setAttribute('readonly', true);
    box.setAttribute('onClick', 'selectBox(' + id + ');');
 
    mcs.boxes.push(box);
@@ -59,6 +91,13 @@ function fillBoxContext(id) {
    nameField.setAttribute('type', 'text');
    nameField.setAttribute('data-id', id);
    $('.context-pane').append(wrapElement('Name', nameField, '#'));
+
+   var valueField = document.createElement('input');
+   valueField.value = box.attr('data-value');
+   valueField.className = 'context-value';
+   valueField.setAttribute('type', 'text');
+   valueField.setAttribute('data-id', id);
+   $('.context-pane').append(wrapElement('Value', valueField));
 }
 
 function addBoxContextButtons(id) {
@@ -85,6 +124,10 @@ function saveBox(id) {
 
    var name = $('.context-pane .context-name').val();
    $('.box[data-id=' + id + ']').attr('data-name', name);
+
+   var value = $('.context-pane .context-value').val();
+   $('.box[data-id=' + id + ']').attr('data-value', value);
+   $('.box[data-id=' + id + ']').val(value);
 }
 
 function loadBox(id) {
