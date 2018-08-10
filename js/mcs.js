@@ -1,6 +1,10 @@
-'use strict;'
+'use strict';
 
 var mcs = mcs || {};
+
+mcs.constants = {};
+mcs.constants.DEFAULT_BOX_WIDTH = 50;
+mcs.constants.DEFAULT_BOX_HEIGHT = 50;
 
 $(document).ready(function() {
    document.getElementById('background-upload').addEventListener('change', handleFileSelect, false);
@@ -8,6 +12,34 @@ $(document).ready(function() {
 
 function clickUpload() {
    $('#background-upload').click();
+}
+
+function serialize() {
+   var dump = {
+      pages: []
+   };
+
+   var page = {
+      background: $('.background-image').attr('src'),
+      boxes: []
+   };
+
+   mcs.boxes = mcs.boxes || [];
+   mcs.boxes.forEach(function(box) {
+      page.boxes.push({
+         id: box.getAttribute('data-id'),
+         name: box.getAttribute('data-name'),
+         value: box.getAttribute('data-value'),
+         x: box.getAttribute('data-x') || 0,
+         y: box.getAttribute('data-y') || 0,
+         width: box.style.width,
+         height: box.style.height,
+      });
+   });
+
+   dump.pages.push(page);
+
+   return JSON.stringify(dump);
 }
 
 function handleFileSelect() {
@@ -37,7 +69,7 @@ function getBoxSelector(id) {
 }
 
 function addBox() {
-   mcs.boxes = mcs.boxes || []
+   mcs.boxes = mcs.boxes || [];
 
    var id = mcs.boxes.length;
 
@@ -46,6 +78,8 @@ function addBox() {
    box.setAttribute('data-id', id);
    box.setAttribute('data-name', '');
    box.setAttribute('data-value', '');
+   box.style.width = mcs.constants.DEFAULT_BOX_WIDTH;
+   box.style.height = mcs.constants.DEFAULT_BOX_HEIGHT;
    box.setAttribute('onClick', 'selectBox(' + id + ');');
 
    mcs.boxes.push(box);
@@ -193,6 +227,8 @@ function addBoxContextButtons(id) {
 }
 
 function saveBox(id) {
+   // TODO(eriq): Validate
+
    var name = $('.context-pane .context-name').val();
    $(getBoxSelector(id)).attr('data-name', name);
 
@@ -214,6 +250,11 @@ function load() {
 function download() {
    // TODO(eriq)
    console.log("Download");
+
+   var data = serialize();
+
+   // TEST
+   console.log(data);
 }
 
 function viewMode() {
