@@ -57,6 +57,7 @@
 
 .page-pane {
    flex: 4;
+   position: relative;
 }
 
 .page-pane .background-image {
@@ -73,6 +74,22 @@
 }
 
 /* Boxes */
+.box {
+   outline: 1px solid black;
+
+   width: 50px;
+   height: 50px;
+   margin: 0px;
+   padding: 0px;
+   position: absolute;
+   top: 0;
+   left: 0;
+   z-index: 10;
+   background-color: white;
+
+   box-sizing: border-box;
+}
+
 .box.selected {
    outline: 2px solid red;
 }

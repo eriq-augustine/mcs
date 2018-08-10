@@ -32,22 +32,97 @@ function handleFileSelect() {
    reader.readAsDataURL(file);
 }
 
+function getBoxSelector(id) {
+   return '.box[data-id="' + id + '"]';
+}
+
 function addBox() {
    mcs.boxes = mcs.boxes || []
 
    var id = mcs.boxes.length;
 
-   var box = document.createElement('input');
+   var box = document.createElement('div');
    box.className = 'box';
-   box.setAttribute('type', 'text');
    box.setAttribute('data-id', id);
    box.setAttribute('data-name', '');
    box.setAttribute('data-value', '');
-   box.setAttribute('readonly', true);
    box.setAttribute('onClick', 'selectBox(' + id + ');');
 
    mcs.boxes.push(box);
    $('.page-pane').append(box);
+
+   makeDragable(id);
+}
+
+function makeDragable(id) {
+   interact(getBoxSelector(id))
+      .draggable({
+         onmove: window.dragMoveListener,
+         restrict: {
+            restriction: 'parent',
+            elementRect: {
+               top: 0,
+               left: 0,
+               bottom: 1,
+               right: 1
+            }
+         },
+      })
+      .resizable({
+         // resize from all edges and corners
+         edges: {
+            left: true,
+            right: true,
+            bottom: true,
+            top: true
+         },
+
+         // keep the edges inside the parent
+         restrictEdges: {
+            outer: 'parent',
+            endOnly: true,
+         },
+
+         // minimum size
+         restrictSize: {
+            min: {
+               width: 20,
+               height: 20
+            },
+         },
+
+         inertia: false,
+      })
+      .on('resizemove', function (event) {
+         var target = event.target;
+         var x = (parseFloat(target.getAttribute('data-x')) || 0);
+         var y = (parseFloat(target.getAttribute('data-y')) || 0);
+
+         // update the element's style
+         target.style.width = event.rect.width + 'px';
+         target.style.height = event.rect.height + 'px';
+
+         // translate when resizing from top or left edges
+         x += event.deltaRect.left;
+         y += event.deltaRect.top;
+
+         target.style.webkitTransform = 'translate(' + x + 'px,' + y + 'px)';
+         target.style.transform = 'translate(' + x + 'px,' + y + 'px)';
+
+         target.setAttribute('data-x', x);
+         target.setAttribute('data-y', y);
+      })
+      .on('dragmove', function(event) {
+         var target = event.target;
+         var x = (parseFloat(target.getAttribute('data-x')) || 0) + event.dx;
+         var y = (parseFloat(target.getAttribute('data-y')) || 0) + event.dy;
+
+         target.style.webkitTransform = 'translate(' + x + 'px,' + y + 'px)';
+         target.style.transform = 'translate(' + x + 'px,' + y + 'px)';
+
+         target.setAttribute('data-x', x);
+         target.setAttribute('data-y', y);
+      });
 }
 
 function selectBox(id) {
@@ -57,7 +132,7 @@ function selectBox(id) {
    mcs.selected = id;
 
    $('.box').removeClass('selected');
-   $('.box[data-id=' + id + ']').addClass('selected');
+   $(getBoxSelector(id)).addClass('selected');
 
    fillBoxContext(id);
 }
@@ -66,7 +141,7 @@ function fillBoxContext(id) {
    $('.context-pane').empty();
    addBoxContextButtons(id);
 
-   var box = $('.box[data-id=' + id + ']');
+   var box = $(getBoxSelector(id));
 
    var wrapElement = function(labelText, field, prefix = '') {
       var label = document.createElement('label');
@@ -118,16 +193,12 @@ function addBoxContextButtons(id) {
 }
 
 function saveBox(id) {
-   // TODO(eriq)
-   console.log("Save Box: " + id);
-
-
    var name = $('.context-pane .context-name').val();
-   $('.box[data-id=' + id + ']').attr('data-name', name);
+   $(getBoxSelector(id)).attr('data-name', name);
 
    var value = $('.context-pane .context-value').val();
-   $('.box[data-id=' + id + ']').attr('data-value', value);
-   $('.box[data-id=' + id + ']').val(value);
+   $(getBoxSelector(id)).attr('data-value', value);
+   $(getBoxSelector(id)).html(value);
 }
 
 function loadBox(id) {
