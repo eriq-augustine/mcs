@@ -150,18 +150,25 @@ function fillBoxContext(id) {
    $('.context-pane').append(wrapElement('ID', idField));
 
    var nameField = document.createElement('input');
+   nameField.setAttribute('type', 'text');
    nameField.value = box.attr('data-name');
    nameField.className = 'context-name';
-   nameField.setAttribute('type', 'text');
    nameField.setAttribute('data-id', id);
    $('.context-pane').append(wrapElement('Name', nameField, '#'));
 
    var valueField = document.createElement('input');
+   valueField.setAttribute('type', 'text');
    valueField.value = box.attr('data-value');
    valueField.className = 'context-value';
-   valueField.setAttribute('type', 'text');
    valueField.setAttribute('data-id', id);
    $('.context-pane').append(wrapElement('Value', valueField));
+
+   var lockedField = document.createElement('input');
+   lockedField.setAttribute('type', 'checkbox');
+   lockedField.checked = (box.attr('data-locked') === 'true');
+   lockedField.className = 'context-locked';
+   lockedField.setAttribute('data-id', id);
+   $('.context-pane').append(wrapElement('Locked', lockedField));
 }
 
 function addBoxContextButtons(id) {
@@ -174,7 +181,7 @@ function addBoxContextButtons(id) {
    buttonArea.appendChild(saveButton);
 
    var clearButton = document.createElement('button');
-   clearButton.innerHTML = 'Load';
+   clearButton.innerHTML = 'Clear';
    clearButton.setAttribute('onClick', 'clearBox(' + id + ');');
    buttonArea.appendChild(clearButton);
 
@@ -190,21 +197,17 @@ function saveBox(id) {
    var value = $('.context-pane .context-value').val();
    $(mcs.box.selector(id)).attr('data-value', value);
    $(mcs.box.selector(id)).html(value);
+
+   var locked = $('.context-pane .context-locked').prop('checked');
+   $(mcs.box.selector(id)).attr('data-locked', locked);
 }
 
-function loadBox(id) {
+function clearBox(id) {
    // TODO(eriq)
-   console.log("Load Box: " + id);
-}
-
-function load() {
-   // TODO(eriq)
-   console.log("Load");
+   console.log("TODO(eriq): clearBox.");
 }
 
 function download() {
-   // TODO(eriq): Filename
-
    var data = serialize();
 
    var downloadLink = document.createElement('a');
