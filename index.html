@@ -13,10 +13,12 @@
             <div class='top-bar'>
                <button class='add-box-button' onClick='addBox()'>Add Box</button>
 
-               <input type="file" id='background-upload' accept='image/*' />
-               <button class='choose-background-button' onClick='clickUpload()'>Choose Background</button>
+               <input type="file" id='background-upload' class='upload-button' accept='image/*' />
+               <button class='choose-background-button' onClick='clickUploadBackground()'>Choose Background</button>
 
-               <button class='load-button' onClick='load()'>Load</button>
+               <input type="file" id='sheet-load' class='upload-button' accept='.mcs' />
+               <button class='choose-sheet-button' onClick='clickLoadSheet()'>Load Sheet</button>
+
                <button class='download-button' onClick='download()'>Download</button>
                <button class='view-mode-button' onClick='viewMode()'>View Mode</button>
             </div>

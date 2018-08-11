@@ -30,7 +30,7 @@
    justify-content: space-evenly;
 }
 
-.top-bar #background-upload {
+.top-bar .upload-button {
    display: none;
 }
 

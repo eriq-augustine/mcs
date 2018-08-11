@@ -7,11 +7,16 @@ mcs.constants.DEFAULT_BOX_WIDTH = 50;
 mcs.constants.DEFAULT_BOX_HEIGHT = 50;
 
 $(document).ready(function() {
-   document.getElementById('background-upload').addEventListener('change', handleFileSelect, false);
+   document.getElementById('background-upload').addEventListener('change', handleBackgroundFileSelect, false);
+   document.getElementById('sheet-load').addEventListener('change', handleSheetFileSelect, false);
 });
 
-function clickUpload() {
+function clickUploadBackgrounf() {
    $('#background-upload').click();
+}
+
+function clickLoadSheet() {
+   $('#sheet-load').click();
 }
 
 function serialize() {
@@ -39,10 +44,44 @@ function serialize() {
 
    dump.pages.push(page);
 
-   return JSON.stringify(dump);
+   return JSON.stringify(dump, null, 4);
 }
 
-function handleFileSelect() {
+function deserialize(text) {
+   var data = JSON.parse(text);
+
+   // TODO(eriq): Clear existing.
+   // TODO(eriq): Multiple pages.
+
+   var page = data.pages[0];
+
+   $('.background-image').show().attr('src', page.background);
+
+   page.boxes.forEach(function(rawBox) {
+      var box = makeBox(rawBox.id, rawBox.name, rawBox.value, rawBox.width, rawBox.height, rawBox.x, rawBox.y);
+      addBox(box);
+   });
+}
+
+function handleSheetFileSelect() {
+   var files = document.getElementById('sheet-load').files;
+
+   if (files.length != 1) {
+      console.error("Wrong number of files. Expected 1, got " + files.length + ".");
+      return;
+   }
+
+   var file = files[0];
+
+   var reader = new FileReader();
+   reader.onload = function(event) {
+      deserialize(event.target.result);
+   };
+
+   reader.readAsText(file);
+}
+
+function handleBackgroundFileSelect() {
    var files = document.getElementById('background-upload').files;
 
    if (files.length == 0) {
@@ -68,19 +107,57 @@ function getBoxSelector(id) {
    return '.box[data-id="' + id + '"]';
 }
 
-function addBox() {
-   mcs.boxes = mcs.boxes || [];
+// Return |val| if it is not undefined or null, the default otherwise.
+function defaultNil(val, defaultVal) {
+   if (val == undefined || val == null) {
+      return defaultVal;
+   }
 
-   var id = mcs.boxes.length;
+   return val;
+}
+
+function nil(val) {
+   return val == undefined || val == null;
+}
+
+function makeBox(id, name, value, width, height, x, y) {
+   name = defaultNil(name, '');
+   value = defaultNil(value, '');
+   width = defaultNil(width, mcs.constants.DEFAULT_BOX_WIDTH);
+   height = defaultNil(height, mcs.constants.DEFAULT_BOX_HEIGHT);
+   x = defaultNil(x, 0);
+   y = defaultNil(y, 0);
+
+   // TODO(eriq): Add locking behavior.
 
    var box = document.createElement('div');
    box.className = 'box';
    box.setAttribute('data-id', id);
-   box.setAttribute('data-name', '');
-   box.setAttribute('data-value', '');
-   box.style.width = mcs.constants.DEFAULT_BOX_WIDTH;
-   box.style.height = mcs.constants.DEFAULT_BOX_HEIGHT;
+   box.setAttribute('data-name', name);
+   box.setAttribute('data-value', value);
+
+   box.style.width = width;
+   box.style.height = height;
+
+   box.style.webkitTransform = 'translate(' + x + 'px,' + y + 'px)';
+   box.style.transform = 'translate(' + x + 'px,' + y + 'px)';
+
    box.setAttribute('onClick', 'selectBox(' + id + ');');
+
+   return box;
+}
+
+// Add a new, empty box.
+function addBox(box) {
+   mcs.boxes = mcs.boxes || [];
+
+   var id;
+   if (nil(box)) {
+      id = mcs.boxes.length;
+      box = makeBox(id);
+   } else {
+      id = box.getAttribute('data-id');
+   }
 
    mcs.boxes.push(box);
    $('.page-pane').append(box);
@@ -248,13 +325,18 @@ function load() {
 }
 
 function download() {
-   // TODO(eriq)
-   console.log("Download");
+   // TODO(eriq): Filename
 
    var data = serialize();
 
-   // TEST
-   console.log(data);
+   var downloadLink = document.createElement('a');
+   downloadLink.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(data));
+   downloadLink.setAttribute('download', 'character_sheet.mcs');
+   downloadLink.style.display = 'none';
+
+   document.body.appendChild(downloadLink);
+   downloadLink.click();
+   document.body.removeChild(downloadLink);
 }
 
 function viewMode() {
