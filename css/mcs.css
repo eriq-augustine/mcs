@@ -73,8 +73,9 @@
    height: 20px;
 }
 
-/* Boxes */
-.box {
+/* Cells */
+
+.cell {
    outline: 1px solid black;
 
    width: 50px;
@@ -90,6 +91,6 @@
    box-sizing: border-box;
 }
 
-.box.selected {
+.cell.selected {
    outline: 2px solid red;
 }

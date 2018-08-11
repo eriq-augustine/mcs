@@ -16,8 +16,8 @@ mcs.util.nil = function(val) {
    return val == undefined || val == null;
 }
 
-mcs.util.makeDragable = function(id) {
-   interact(mcs.box.selector(id))
+mcs.util.makeDragable = function(selector) {
+   interact(selector)
       .draggable({
          onmove: window.dragMoveListener,
          restrict: {
