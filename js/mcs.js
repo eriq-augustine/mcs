@@ -7,7 +7,8 @@ mcs.main = mcs.main || {};
 mcs.main.FILENAME = 'character_sheet.mcs'
 
 // All the cells on the sheet.
-mcs.main.cells = mcs.main.cells || [];
+// Keeping it as a map makes JSON operations harder, but is more robust in the end.
+mcs.main.cells = mcs.main.cells || new Map();
 
 $(document).ready(function() {
    document.getElementById('background-upload').addEventListener('change', handleBackgroundFileSelect, false);
@@ -23,20 +24,14 @@ function clickLoadSheet() {
 }
 
 function serialize() {
-   var dump = {
-      pages: []
+   let dump = {
+      pages: [
+         {
+            background: $('.background-image').attr('src'),
+         }
+      ],
+      cells: [...mcs.main.cells]
    };
-
-   var page = {
-      background: $('.background-image').attr('src'),
-      cells: []
-   };
-
-   mcs.main.cells.forEach(function(cell) {
-      page.cells.push(mcs.cell.toObject(cell));
-   });
-
-   dump.pages.push(page);
 
    return JSON.stringify(dump, null, 4);
 }
@@ -47,14 +42,15 @@ function deserialize(text) {
    // TODO(eriq): Clear existing.
    // TODO(eriq): Multiple pages.
 
-   var page = data.pages[0];
+   let page = data.pages[0];
 
    $('.background-image').show().attr('src', page.background);
 
-   page.cells.forEach(function(rawCell) {
-      var cell = mcs.cell.fromObject(rawCell);
+   let cells = new Map(data.cells);
+   for (let rawCell of cells.values()) {
+      let cell = new mcs.cell.Cell(rawCell);
       addCell(cell);
-   });
+   }
 }
 
 function handleSheetFileSelect() {
@@ -97,112 +93,84 @@ function handleBackgroundFileSelect() {
    reader.readAsDataURL(file);
 }
 
-// Add a new, empty cell.
+// Add a cell to the page.
 function addCell(cell) {
-   var id;
+   let id;
    if (mcs.util.nil(cell)) {
-      id = mcs.main.cells.length;
-      cell = mcs.cell.create(id);
+      id = mcs.main.cells.size;
+      cell = new mcs.cell.Cell({id: id});
    } else {
-      id = cell.getAttribute('data-id');
+      id = cell.id;
    }
 
-   mcs.main.cells.push(cell);
-   $('.page-pane').append(cell);
+   mcs.main.cells.set(id, cell);
+   $('.page-pane').append(cell.getDiv());
 
-   mcs.util.makeDragable(mcs.cell.selector(id));
+   mcs.util.makeDragable(cell);
 }
 
 
 function selectCell(id) {
-   if (mcs.selected == id) {
+   if (mcs.main.selected === id) {
       return;
    }
-   mcs.selected = id;
+   mcs.main.selected = id;
 
    $('.cell').removeClass('selected');
    $(mcs.cell.selector(id)).addClass('selected');
 
-   fillCellContext(id);
+   let cell = mcs.main.cells.get(id);
+   fillCellContext(cell);
 }
 
-function fillCellContext(id) {
+function fillCellContext(cell) {
    $('.context-pane').empty();
-   addCellContextButtons(id);
+   addCellContextButtons(cell);
 
-   var cell = $(mcs.cell.selector(id));
-
-   var wrapElement = function(labelText, field, prefix = '') {
-      var label = document.createElement('label');
+   cell.getDetailsForm().forEach(function({labelText, field, prefix = ''}) {
+      let label = document.createElement('label');
       label.innerHTML = labelText + ': ' + prefix;
 
-      var wrap = document.createElement('div');
+      let wrap = document.createElement('div');
       wrap.className = 'context-wrap';
 
       wrap.appendChild(label);
       wrap.appendChild(field);
 
-      return wrap;
-   };
-
-   var idField = document.createElement('span');
-   idField.innerHTML = '$' + id;
-   $('.context-pane').append(wrapElement('ID', idField));
-
-   var nameField = document.createElement('input');
-   nameField.setAttribute('type', 'text');
-   nameField.value = cell.attr('data-name');
-   nameField.className = 'context-name';
-   nameField.setAttribute('data-id', id);
-   $('.context-pane').append(wrapElement('Name', nameField, '#'));
-
-   var valueField = document.createElement('input');
-   valueField.setAttribute('type', 'text');
-   valueField.value = cell.attr('data-value');
-   valueField.className = 'context-value';
-   valueField.setAttribute('data-id', id);
-   $('.context-pane').append(wrapElement('Value', valueField));
-
-   var lockedField = document.createElement('input');
-   lockedField.setAttribute('type', 'checkcell');
-   lockedField.checked = (cell.attr('data-locked') === 'true');
-   lockedField.className = 'context-locked';
-   lockedField.setAttribute('data-id', id);
-   $('.context-pane').append(wrapElement('Locked', lockedField));
+      $('.context-pane').append(wrap);
+   });
 }
 
-function addCellContextButtons(id) {
+function addCellContextButtons(cell) {
    var buttonArea = document.createElement('div');
    buttonArea.className = 'context-buttons';
 
    var saveButton = document.createElement('button');
    saveButton.innerHTML = 'Save';
-   saveButton.setAttribute('onClick', 'saveCell(' + id + ');');
+   saveButton.setAttribute('onClick', 'saveCell(' + cell.id + ');');
    buttonArea.appendChild(saveButton);
 
    var clearButton = document.createElement('button');
    clearButton.innerHTML = 'Clear';
-   clearButton.setAttribute('onClick', 'clearCell(' + id + ');');
+   clearButton.setAttribute('onClick', 'clearCell(' + cell.id + ');');
    buttonArea.appendChild(clearButton);
 
    $('.context-pane').append(buttonArea);
 }
 
 function saveCell(id) {
-   // TODO(eriq): Validate
+   let cell = mcs.main.cells.get(id);
 
-   var name = $('.context-pane .context-name').val();
-   $(mcs.cell.selector(id)).attr('data-name', name);
+   cell.name = $('.context-pane .context-name').val();
+   cell.value = $('.context-pane .context-value').val();
+   cell.locked = $('.context-pane .context-locked').prop('checked');
 
-   var value = $('.context-pane .context-value').val();
-   $(mcs.cell.selector(id)).attr('data-value', value);
-   $(mcs.cell.selector(id)).html(value);
-
-   var locked = $('.context-pane .context-locked').prop('checked');
-   $(mcs.cell.selector(id)).attr('data-locked', locked);
+   $(cell.getSelector()).html(cell.value);
 }
 
 function clearCell(id) {
+   let cell = mcs.main.cells.get(id);
+
    // TODO(eriq)
    console.log("TODO(eriq): clearCell.");
 }

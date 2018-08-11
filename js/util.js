@@ -16,8 +16,9 @@ mcs.util.nil = function(val) {
    return val == undefined || val == null;
 }
 
-mcs.util.makeDragable = function(selector) {
-   interact(selector)
+// This is only for cells.
+mcs.util.makeDragable = function(cell) {
+   interact(cell.getSelector())
       .draggable({
          onmove: window.dragMoveListener,
          restrict: {
@@ -48,41 +49,39 @@ mcs.util.makeDragable = function(selector) {
          // minimum size
          restrictSize: {
             min: {
-               width: 20,
-               height: 20
+               width: 10,
+               height: 10
             },
          },
 
          inertia: false,
       })
       .on('resizemove', function (event) {
+         // The div that represents the context cell.
          var target = event.target;
-         var x = (parseFloat(target.getAttribute('data-x')) || 0);
-         var y = (parseFloat(target.getAttribute('data-y')) || 0);
 
          // update the element's style
          target.style.width = event.rect.width + 'px';
          target.style.height = event.rect.height + 'px';
 
-         // translate when resizing from top or left edges
-         x += event.deltaRect.left;
-         y += event.deltaRect.top;
+         cell.width = target.style.width;
+         cell.height = target.style.height;
 
-         target.style.webkitTransform = 'translate(' + x + 'px,' + y + 'px)';
-         target.style.transform = 'translate(' + x + 'px,' + y + 'px)';
+         // Translate when resizing from top or left edges.
+         cell.x += event.deltaRect.left;
+         cell.y += event.deltaRect.top;
 
-         target.setAttribute('data-x', x);
-         target.setAttribute('data-y', y);
+         target.style.webkitTransform = 'translate(' + cell.x + 'px,' + cell.y + 'px)';
+         target.style.transform = 'translate(' + cell.x + 'px,' + cell.y + 'px)';
       })
       .on('dragmove', function(event) {
+         // The div that represents the context cell.
          var target = event.target;
-         var x = (parseFloat(target.getAttribute('data-x')) || 0) + event.dx;
-         var y = (parseFloat(target.getAttribute('data-y')) || 0) + event.dy;
 
-         target.style.webkitTransform = 'translate(' + x + 'px,' + y + 'px)';
-         target.style.transform = 'translate(' + x + 'px,' + y + 'px)';
+         cell.x += event.dx;
+         cell.y += event.dy;
 
-         target.setAttribute('data-x', x);
-         target.setAttribute('data-y', y);
+         target.style.webkitTransform = 'translate(' + cell.x + 'px,' + cell.y + 'px)';
+         target.style.transform = 'translate(' + cell.x + 'px,' + cell.y + 'px)';
       });
 }

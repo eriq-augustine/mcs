@@ -6,57 +6,82 @@ mcs.cell = mcs.cell || {};
 mcs.cell.DEFAULT_CELL_WIDTH = 50;
 mcs.cell.DEFAULT_CELL_HEIGHT = 50;
 
-// Transform into a simple object.
-mcs.cell.toObject = function(cell) {
-   return {
-      id: cell.getAttribute('data-id'),
-      name: cell.getAttribute('data-name'),
-      value: cell.getAttribute('data-value'),
-      locked: cell.getAttribute('data-locked') || false,
-      x: cell.getAttribute('data-x') || 0,
-      y: cell.getAttribute('data-y') || 0,
-      width: cell.style.width,
-      height: cell.style.height,
-   };
-}
+mcs.cell.Cell = class {
+   constructor({id, page = 0, name = '', value = '', locked = false,
+         width = mcs.cell.DEFAULT_CELL_WIDTH, height = mcs.cell.DEFAULT_CELL_HEIGHT, x = 0, y = 0}) {
+      if (mcs.util.nil(id)) {
+         throw "Cell id must be real.";
+      }
 
-// Transform from a simple object.
-mcs.cell.fromObject = function(rawCell) {
-   return mcs.cell.create(
-         rawCell.id,
-         rawCell.name, rawCell.value, rawCell.locked,
-         rawCell.width, rawCell.height, rawCell.x, rawCell.y);
-}
+      this.id = id;
+      this.page = page;
+
+      this.name = name;
+      this.value = value;
+      this.locked = locked;
+      this.width = width;
+      this.height = height;
+      this.x = x;
+      this.y = y;
+   };
+
+   getSelector() {
+      return mcs.cell.selector(this.id);
+   };
+
+   // Get a div that represents this cell.
+   // For use on the sheet itself (not context panel).
+   getDiv() {
+      let div = document.createElement('div');
+      div.className = 'cell';
+
+      div.setAttribute('data-id', this.id);
+
+      div.style.width = this.width;
+      div.style.height = this.height;
+
+      div.style.webkitTransform = 'translate(' + this.x + 'px,' + this.y + 'px)';
+      div.style.transform = 'translate(' + this.x + 'px,' + this.y + 'px)';
+
+      div.setAttribute('onClick', 'selectCell(' + this.id + ');');
+
+      return div;
+   };
+
+   // Not an actual form, but just a bunch of fields that represent this cell.
+   // Return: [{labelText, field, prefix}, ...]
+   getDetailsForm() {
+      let form = [];
+
+      let idField = document.createElement('span');
+      idField.innerHTML = '$' + this.id;
+      form.push({labelText: 'ID', field: idField});
+
+      var nameField = document.createElement('input');
+      nameField.className = 'context-name';
+      nameField.setAttribute('type', 'text');
+      nameField.value = this.name;
+      nameField.setAttribute('data-id', this.id);
+      form.push({labelText: 'Name', field: nameField, prefix: '#'});
+
+      var valueField = document.createElement('input');
+      valueField.className = 'context-value';
+      valueField.setAttribute('type', 'text');
+      valueField.value = this.value;
+      valueField.setAttribute('data-id', this.id);
+      form.push({labelText: 'Value', field: valueField});
+
+      var lockedField = document.createElement('input');
+      lockedField.className = 'context-locked';
+      lockedField.setAttribute('type', 'checkbox');
+      lockedField.checked = this.locked;
+      lockedField.setAttribute('data-id', this.id);
+      form.push({labelText: 'Locked', field: lockedField});
+
+      return form;
+   };
+};
 
 mcs.cell.selector = function(id) {
    return '.cell[data-id="' + id + '"]';
-}
-
-mcs.cell.create = function(id, name, value, locked, width, height, x, y) {
-   name = mcs.util.defaultNil(name, '');
-   value = mcs.util.defaultNil(value, '');
-   locked = mcs.util.defaultNil(locked, false);
-   width = mcs.util.defaultNil(width, mcs.cell.DEFAULT_CELL_WIDTH);
-   height = mcs.util.defaultNil(height, mcs.cell.DEFAULT_CELL_HEIGHT);
-   x = mcs.util.defaultNil(x, 0);
-   y = mcs.util.defaultNil(y, 0);
-
-   var cell = document.createElement('div');
-   cell.className = 'cell';
-   cell.setAttribute('data-id', id);
-   cell.setAttribute('data-name', name);
-   cell.setAttribute('data-value', value);
-   cell.setAttribute('data-locked', locked);
-
-   cell.style.width = width;
-   cell.style.height = height;
-
-   cell.setAttribute('data-x', x);
-   cell.setAttribute('data-y', y);
-   cell.style.webkitTransform = 'translate(' + x + 'px,' + y + 'px)';
-   cell.style.transform = 'translate(' + x + 'px,' + y + 'px)';
-
-   cell.setAttribute('onClick', 'selectCell(' + id + ');');
-
-   return cell;
 }
