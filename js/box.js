@@ -47,6 +47,8 @@ mcs.box.create = function(id, name, value, width, height, x, y) {
    box.style.width = width;
    box.style.height = height;
 
+   box.setAttribute('data-x', x);
+   box.setAttribute('data-y', y);
    box.style.webkitTransform = 'translate(' + x + 'px,' + y + 'px)';
    box.style.transform = 'translate(' + x + 'px,' + y + 'px)';
 
