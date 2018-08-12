@@ -44,7 +44,9 @@ function deserialize(text) {
 
    let page = data.pages[0];
 
-   $('.background-image').show().attr('src', page.background);
+   if (page.background) {
+      $('.background-image').show().attr('src', page.background);
+   }
 
    let cells = new Map(data.cells);
    for (let rawCell of cells.values()) {
@@ -159,6 +161,8 @@ function addCellContextButtons(cell) {
 }
 
 function saveCell(id) {
+   // TODO(eriq): Validate. eg. name conflict.
+
    let cell = mcs.main.cells.get(id);
 
    cell.name = $('.context-pane .context-name').val();

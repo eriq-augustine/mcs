@@ -36,6 +36,7 @@ mcs.cell.Cell = class {
       div.className = 'cell';
 
       div.setAttribute('data-id', this.id);
+      div.innerHTML = this.value;
 
       div.style.width = this.width;
       div.style.height = this.height;

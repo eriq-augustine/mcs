@@ -16,6 +16,17 @@ mcs.util.nil = function(val) {
    return val == undefined || val == null;
 }
 
+// Also works for a Map.
+mcs.util.setContains = function(set, ...values) {
+   for (let value of values) {
+      if (!set.has(value)) {
+         return false;
+      }
+   }
+
+   return true;
+}
+
 // This is only for cells.
 mcs.util.makeDragable = function(cell) {
    interact(cell.getSelector())
