@@ -6,17 +6,21 @@ mcs.main = mcs.main || {};
 // TODO(eriq): Custom filenames.
 mcs.main.FILENAME = 'character_sheet.mcs'
 
+mcs.main.pages = mcs.main.pages || new Map();
+
 // All the cells on the sheet.
 // Keeping it as a map makes JSON operations harder, but is more robust in the end.
 mcs.main.cells = mcs.main.cells || new Map();
 
+mcs.main.selectedPage = mcs.main.selectedPage || null;
+mcs.main.selectedCell = mcs.main.selectedCell || null;
+
 $(document).ready(function() {
-   document.getElementById('background-upload').addEventListener('change', handleBackgroundFileSelect, false);
    document.getElementById('sheet-load').addEventListener('change', handleSheetFileSelect, false);
 });
 
-function clickUploadBackground() {
-   $('#background-upload').click();
+function clickUploadBackground(pageId) {
+   $(`.background-upload-button-${pageId}`).click();
 }
 
 function clickLoadSheet() {
@@ -25,11 +29,7 @@ function clickLoadSheet() {
 
 function serialize() {
    let dump = {
-      pages: [
-         {
-            background: $('.background-image').attr('src'),
-         }
-      ],
+      pages: [...mcs.main.pages],
       cells: [...mcs.main.cells]
    };
 
@@ -37,15 +37,13 @@ function serialize() {
 }
 
 function deserialize(text) {
-   var data = JSON.parse(text);
+   let data = JSON.parse(text);
 
    // TODO(eriq): Clear existing.
-   // TODO(eriq): Multiple pages.
 
-   let page = data.pages[0];
-
-   if (page.background) {
-      $('.background-image').show().attr('src', page.background);
+   let pages = new Map(data.pages);
+   for (let rawPage of pages.values()) {
+      addPage(rawPage);
    }
 
    let cells = new Map(data.cells);
@@ -56,16 +54,16 @@ function deserialize(text) {
 }
 
 function handleSheetFileSelect() {
-   var files = document.getElementById('sheet-load').files;
+   let files = document.getElementById('sheet-load').files;
 
    if (files.length != 1) {
       console.error("Wrong number of files. Expected 1, got " + files.length + ".");
       return;
    }
 
-   var file = files[0];
+   let file = files[0];
 
-   var reader = new FileReader();
+   let reader = new FileReader();
    reader.onload = function(event) {
       deserialize(event.target.result);
    };
@@ -73,8 +71,8 @@ function handleSheetFileSelect() {
    reader.readAsText(file);
 }
 
-function handleBackgroundFileSelect() {
-   var files = document.getElementById('background-upload').files;
+function handleBackgroundFileSelect(id) {
+   let files = document.querySelector(`.background-upload-button-${id}`).files;
 
    if (files.length == 0) {
       return;
@@ -85,38 +83,120 @@ function handleBackgroundFileSelect() {
       return;
    }
 
-   var file = files[0];
+   let file = files[0];
 
-   var reader = new FileReader();
+   let reader = new FileReader();
    reader.onload = function(event) {
-      $('.background-image').show().attr('src', event.target.result);
+      let background = event.target.result;
+
+      mcs.main.pages.get(id).background = background;
+
+      let backgroundElement = document.createElement('img');
+      backgroundElement.className = 'background-image';
+      backgroundElement.setAttribute('src', background);
+
+      $(`.sheet-page-${id}`).append(backgroundElement);
    };
 
    reader.readAsDataURL(file);
 }
 
+function addPage({id = null, background = ''}) {
+   if (mcs.util.nil(id)) {
+      id = mcs.main.pages.size;
+   }
+
+   mcs.main.pages.set(id, {
+      id: id,
+      background: background
+   });
+
+   let newPage = document.createElement('div');
+   newPage.className = `sheet-page sheet-page-${id}`;
+   newPage.setAttribute('onClick', `selectPage(${id});`);
+
+   $('.page-pane').append(newPage);
+
+   if (mcs.util.defaultNil(background, '') != '') {
+      let backgroundElement = document.createElement('img');
+      backgroundElement.className = 'background-image';
+      backgroundElement.setAttribute('src', background);
+
+      $(`.sheet-page-${id}`).append(backgroundElement);
+   }
+}
+
+function selectPage(pageId) {
+   if (mcs.main.selectedPage === pageId) {
+      return;
+   }
+   mcs.main.selectedPage = pageId;
+
+   $('.sheet-page').removeClass('selected');
+   $(`.sheet-page-${pageId}`).addClass('selected');
+
+   fillPageContext(pageId);
+}
+
+function fillPageContext(pageId) {
+   $('.page-context-pane').empty();
+
+   let pageHeader = document.createElement('h3');
+   pageHeader.innerHTML = `Page: ${pageId}`;
+   $('.page-context-pane').append(pageHeader);
+
+   let buttonArea = document.createElement('div');
+   buttonArea.className = 'context-buttons';
+
+   let addCellButton = document.createElement('button');
+   addCellButton.className = 'add-cell-button';
+   addCellButton.innerHTML = 'Add Cell';
+   addCellButton.setAttribute('onClick', `addCell(null, ${pageId});`);
+   buttonArea.appendChild(addCellButton);
+
+   let chooseBackgroundButton = document.createElement('button');
+   chooseBackgroundButton.className = 'choose-background-button';
+   chooseBackgroundButton.innerHTML = 'Choose Background';
+   chooseBackgroundButton.setAttribute('onClick', `clickUploadBackground(${pageId})`);
+   buttonArea.appendChild(chooseBackgroundButton);
+
+   let chooseBackgroundInput = document.createElement('input');
+   chooseBackgroundInput.className = `hidden-upload-button background-upload-button background-upload-button-${pageId}`;
+   chooseBackgroundInput.setAttribute('type', 'file');
+   chooseBackgroundInput.setAttribute('accept', 'image/*');
+   chooseBackgroundInput.addEventListener('change', handleBackgroundFileSelect.bind(null, pageId), false);
+   buttonArea.appendChild(chooseBackgroundInput);
+
+   $('.page-context-pane').append(buttonArea);
+}
+
 // Add a cell to the page.
-function addCell(cell) {
+function addCell(cell, pageId) {
    let id;
+
    if (mcs.util.nil(cell)) {
       id = mcs.main.cells.size;
-      cell = new mcs.cell.Cell({id: id});
+      cell = new mcs.cell.Cell({id: id, page: pageId});
    } else {
       id = cell.id;
+      pageId = cell.page;
+   }
+
+   if (mcs.util.nil(pageId)) {
+      throw "Tried to add a new cell without a page.";
    }
 
    mcs.main.cells.set(id, cell);
-   $('.page-pane').append(cell.getDiv());
+   $(`.page-pane .sheet-page-${pageId}`).append(cell.getDiv());
 
    mcs.util.makeDragable(cell);
 }
 
-
 function selectCell(id) {
-   if (mcs.main.selected === id) {
+   if (mcs.main.selectedCell === id) {
       return;
    }
-   mcs.main.selected = id;
+   mcs.main.selectedCell = id;
 
    $('.cell').removeClass('selected');
    $(mcs.cell.selector(id)).addClass('selected');
@@ -126,7 +206,7 @@ function selectCell(id) {
 }
 
 function fillCellContext(cell) {
-   $('.context-pane').empty();
+   $('.cell-context-pane').empty();
    addCellContextButtons(cell);
 
    cell.getDetailsForm().forEach(function({labelText, field, prefix = ''}) {
@@ -139,25 +219,25 @@ function fillCellContext(cell) {
       wrap.appendChild(label);
       wrap.appendChild(field);
 
-      $('.context-pane').append(wrap);
+      $('.cell-context-pane').append(wrap);
    });
 }
 
 function addCellContextButtons(cell) {
-   var buttonArea = document.createElement('div');
+   let buttonArea = document.createElement('div');
    buttonArea.className = 'context-buttons';
 
-   var saveButton = document.createElement('button');
+   let saveButton = document.createElement('button');
    saveButton.innerHTML = 'Save';
    saveButton.setAttribute('onClick', 'saveCell(' + cell.id + ');');
    buttonArea.appendChild(saveButton);
 
-   var clearButton = document.createElement('button');
+   let clearButton = document.createElement('button');
    clearButton.innerHTML = 'Clear';
    clearButton.setAttribute('onClick', 'clearCell(' + cell.id + ');');
    buttonArea.appendChild(clearButton);
 
-   $('.context-pane').append(buttonArea);
+   $('.cell-context-pane').append(buttonArea);
 }
 
 function saveCell(id) {
@@ -165,9 +245,9 @@ function saveCell(id) {
 
    let cell = mcs.main.cells.get(id);
 
-   cell.name = $('.context-pane .context-name').val();
-   cell.value = $('.context-pane .context-value').val();
-   cell.locked = $('.context-pane .context-locked').prop('checked');
+   cell.name = $('.cell-context-pane .context-name').val();
+   cell.value = $('.cell-context-pane .context-value').val();
+   cell.locked = $('.cell-context-pane .context-locked').prop('checked');
 
    $(cell.getSelector()).html(cell.value);
 }
@@ -180,9 +260,9 @@ function clearCell(id) {
 }
 
 function download() {
-   var data = serialize();
+   let data = serialize();
 
-   var downloadLink = document.createElement('a');
+   let downloadLink = document.createElement('a');
    downloadLink.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(data));
    downloadLink.setAttribute('download', mcs.main.FILENAME);
    downloadLink.style.display = 'none';

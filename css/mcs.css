@@ -9,17 +9,20 @@
 .top-bar {
    background-color: black;
 }
-.context-pane {
+.cell-context-pane {
    background-color: green;
 }
 .page-pane {
    background-color: blue;
 }
-.hidden-pane {
+.page-context-pane {
    background-color: yellow;
 }
 .footer {
    background-color: grey;
+}
+.sheet-page {
+   background-color: black;
 }
 
 /* Top bar */
@@ -30,7 +33,7 @@
    justify-content: space-evenly;
 }
 
-.top-bar .upload-button {
+.hidden-upload-button {
    display: none;
 }
 
@@ -41,31 +44,36 @@
    display: flex;
 }
 
-.context-pane,
+.cell-context-pane,
 .page-pane,
-.hidden-pane {
+.page-context-pane {
    height: 100%;
 }
 
-.context-pane,
-.hidden-pane {
+.cell-context-pane,
+.page-context-pane {
    flex: 1;
 }
 
-.context-pane {
+.cell-context-pane {
 }
 
 .page-pane {
    flex: 4;
-   position: relative;
+   padding: 20px;
 }
 
-.page-pane .background-image {
-   display: none;
+.sheet-page {
+   position: relative;
+   width: 100%;
+   margin-bottom: 20px;
+}
+
+.background-image {
    width: 100%;
 }
 
-.hidden-pane {
+.page-context-pane {
 }
 
 /* footer */
@@ -91,6 +99,6 @@
    box-sizing: border-box;
 }
 
-.cell.selected {
+.selected {
    outline: 2px solid red;
 }
