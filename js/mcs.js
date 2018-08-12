@@ -139,35 +139,30 @@ function selectPage(pageId) {
 }
 
 function fillPageContext(pageId) {
-   $('.page-context-pane').empty();
+   $('.page-context').empty();
 
    let pageHeader = document.createElement('h3');
    pageHeader.innerHTML = `Page: ${pageId}`;
-   $('.page-context-pane').append(pageHeader);
-
-   let buttonArea = document.createElement('div');
-   buttonArea.className = 'context-buttons';
+   $('.page-context').append(pageHeader);
 
    let addCellButton = document.createElement('button');
    addCellButton.className = 'add-cell-button';
    addCellButton.innerHTML = 'Add Cell';
    addCellButton.setAttribute('onClick', `addCell(null, ${pageId});`);
-   buttonArea.appendChild(addCellButton);
+   $('.page-context').append(addCellButton);
 
    let chooseBackgroundButton = document.createElement('button');
    chooseBackgroundButton.className = 'choose-background-button';
    chooseBackgroundButton.innerHTML = 'Choose Background';
    chooseBackgroundButton.setAttribute('onClick', `clickUploadBackground(${pageId})`);
-   buttonArea.appendChild(chooseBackgroundButton);
+   $('.page-context').append(chooseBackgroundButton);
 
    let chooseBackgroundInput = document.createElement('input');
    chooseBackgroundInput.className = `hidden-upload-button background-upload-button background-upload-button-${pageId}`;
    chooseBackgroundInput.setAttribute('type', 'file');
    chooseBackgroundInput.setAttribute('accept', 'image/*');
    chooseBackgroundInput.addEventListener('change', handleBackgroundFileSelect.bind(null, pageId), false);
-   buttonArea.appendChild(chooseBackgroundInput);
-
-   $('.page-context-pane').append(buttonArea);
+   $('.page-context').append(chooseBackgroundInput);
 }
 
 // Add a cell to the page.
@@ -206,7 +201,7 @@ function selectCell(id) {
 }
 
 function fillCellContext(cell) {
-   $('.cell-context-pane').empty();
+   $('.cell-context').empty();
    addCellContextButtons(cell);
 
    cell.getDetailsForm().forEach(function({labelText, field, prefix = ''}) {
@@ -219,25 +214,20 @@ function fillCellContext(cell) {
       wrap.appendChild(label);
       wrap.appendChild(field);
 
-      $('.cell-context-pane').append(wrap);
+      $('.cell-context').append(wrap);
    });
 }
 
 function addCellContextButtons(cell) {
-   let buttonArea = document.createElement('div');
-   buttonArea.className = 'context-buttons';
-
    let saveButton = document.createElement('button');
    saveButton.innerHTML = 'Save';
    saveButton.setAttribute('onClick', 'saveCell(' + cell.id + ');');
-   buttonArea.appendChild(saveButton);
+   $('.cell-context').append(saveButton);
 
    let clearButton = document.createElement('button');
    clearButton.innerHTML = 'Clear';
    clearButton.setAttribute('onClick', 'clearCell(' + cell.id + ');');
-   buttonArea.appendChild(clearButton);
-
-   $('.cell-context-pane').append(buttonArea);
+   $('.cell-context').append(clearButton);
 }
 
 function saveCell(id) {
@@ -245,9 +235,9 @@ function saveCell(id) {
 
    let cell = mcs.main.cells.get(id);
 
-   cell.name = $('.cell-context-pane .context-name').val();
-   cell.value = $('.cell-context-pane .context-value').val();
-   cell.locked = $('.cell-context-pane .context-locked').prop('checked');
+   cell.name = $('.cell-context .context-name').val();
+   cell.value = $('.cell-context .context-value').val();
+   cell.locked = $('.cell-context .context-locked').prop('checked');
 
    $(cell.getSelector()).html(cell.value);
 }

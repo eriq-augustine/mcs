@@ -13,8 +13,8 @@
    </head>
    <body>
       <div class='page'>
-         <div class='page-content page-center'>
-            <div class='top-bar'>
+         <div class='top-bar'>
+            <div class='context-bar sheet-context'>
                <button class='add-page-button' onClick='addPage({})'>Add Page</button>
 
                <input type="file" id='sheet-load' class='hidden-upload-button' accept='.mcs' />
@@ -24,19 +24,17 @@
                <button class='view-mode-button' onClick='viewMode()'>View Mode</button>
             </div>
 
-            <div class='middle'>
-               <div class='cell-context-pane'>
-               </div>
-
-               <div class='page-pane'>
-               </div>
-
-               <div class='page-context-pane'>
-               </div>
+            <div class='context-bar page-context'>
             </div>
 
-            <div class='footer'>
+            <div class='context-bar cell-context'>
             </div>
+         </div>
+
+         <div class='page-pane'>
+         </div>
+
+         <div class='footer'>
          </div>
       </div>
    </body>
