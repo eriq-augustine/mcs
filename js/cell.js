@@ -7,7 +7,8 @@ mcs.cell.DEFAULT_CELL_WIDTH = 50;
 mcs.cell.DEFAULT_CELL_HEIGHT = 50;
 
 mcs.cell.Cell = class {
-   constructor({id, page = 0, name = '', value = '', locked = false,
+   constructor({id, page = 0, name = '', value = '',
+         locked = false, evaluate = false,
          width = mcs.cell.DEFAULT_CELL_WIDTH, height = mcs.cell.DEFAULT_CELL_HEIGHT, x = 0, y = 0}) {
       if (mcs.util.nil(id)) {
          throw "Cell id must be real.";
@@ -19,6 +20,7 @@ mcs.cell.Cell = class {
       this.name = name;
       this.value = value;
       this.locked = locked;
+      this.evaluate = evaluate;
       this.width = width;
       this.height = height;
       this.x = x;
@@ -34,6 +36,7 @@ mcs.cell.Cell = class {
    getEditElement() {
       let element = document.createElement('div');
       element.innerHTML = this.value;
+      element.setAttribute('onClick', 'selectCell(' + this.id + ');');
 
       return this._getElementInternal(element);
    };
@@ -98,6 +101,13 @@ mcs.cell.Cell = class {
       lockedField.checked = this.locked;
       lockedField.setAttribute('data-id', this.id);
       form.push({labelText: 'Locked', field: lockedField});
+
+      var evaluateField = document.createElement('input');
+      evaluateField.className = 'context-evaluate';
+      evaluateField.setAttribute('type', 'checkbox');
+      evaluateField.checked = this.evaluate;
+      evaluateField.setAttribute('data-id', this.id);
+      form.push({labelText: 'Evaluate', field: evaluateField});
 
       return form;
    };

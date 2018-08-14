@@ -34,7 +34,11 @@ mcs.eval.evaluateCells = function(cells) {
             continue;
          }
 
-         let evaluation = mcs.eval.evaluateExpression(evalInfo.value, resolvedCells);
+         let evaluation = evalInfo.value;
+         if (evalInfo.evaluate) {
+            evaluation = mcs.eval.evaluateExpression(evalInfo.value, resolvedCells);
+         }
+
          resolvedCells.set(id, evaluation);
          resolved = true;
       }
@@ -67,25 +71,31 @@ mcs.eval.buildEvalInfo = function(cells) {
    for (let cell of cells.values()) {
       let value = cell.value;
       let dependencies = new Set();
+      let evaluate = false;
 
-      // First replace names with ids.
-      let namesToReplace = value.match(mcs.eval.NAMES_REGEX);
-      if (namesToReplace) {
-         for (let nameToReplace of value.match(mcs.eval.NAMES_REGEX)) {
-            value = value.replace(nameToReplace, '$' + nameToId.get(nameToReplace.substr(1)));
+      if (cell.evaluate) {
+         evaluate = true;
+
+         // First replace names with ids.
+         let namesToReplace = value.match(mcs.eval.NAMES_REGEX);
+         if (namesToReplace) {
+            for (let nameToReplace of value.match(mcs.eval.NAMES_REGEX)) {
+               value = value.replace(nameToReplace, '$' + nameToId.get(nameToReplace.substr(1)));
+            }
          }
-      }
 
-      let ids = value.match(mcs.eval.IDS_REGEX);
-      if (ids) {
-         for (let id of ids) {
-            dependencies.add(parseInt(id.substr(1), 10));
+         let ids = value.match(mcs.eval.IDS_REGEX);
+         if (ids) {
+            for (let id of ids) {
+               dependencies.add(parseInt(id.substr(1), 10));
+            }
          }
       }
 
       evalInfos.set(cell.id, {
          value: value,
-         dependencies: dependencies
+         dependencies: dependencies,
+         evaluate: evaluate
       });
    }
 

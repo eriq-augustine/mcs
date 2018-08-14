@@ -239,6 +239,7 @@ function saveCell(id) {
    cell.name = $('.cell-context .context-name').val();
    cell.value = $('.cell-context .context-value').val();
    cell.locked = $('.cell-context .context-locked').prop('checked');
+   cell.evaluate = $('.cell-context .context-evaluate').prop('checked');
 
    $(cell.getSelector()).html(cell.value);
 }
@@ -291,10 +292,10 @@ function editMode() {
 function evalSheet() {
    let results = mcs.eval.evaluateCells(mcs.main.cells);
 
-   // TODO(eriq);
-
-   // TEST
-   console.log(results);
+   // Fill the display cells with their evaluated values.
+   for (let [id, result] of results.entries()) {
+      $(mcs.main.cells.get(id).getSelector()).val(result).html(result);
+   }
 }
 
 function print() {
