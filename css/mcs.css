@@ -3,8 +3,11 @@
 }
 
 /* DEBUG */
+.top-bar {
+   background-color: orange;
+}
 .sheet-context {
-   background-color: black;
+   background-color: pink;
 }
 .cell-context {
    background-color: green;
@@ -57,6 +60,11 @@
 .page-pane {
    padding: 20px;
    overflow: auto;
+
+   display: flex;
+   flex-direction: column;
+   justify-content: flex-start;
+   align-items: center;
 }
 
 .sheet-page {
@@ -64,6 +72,7 @@
    margin-bottom: 20px;
    min-width: 100px;
    min-height: 100px;
+   display: inline-block;
 }
 
 .background-image {
@@ -87,11 +96,27 @@
    top: 0;
    left: 0;
    z-index: 10;
-   background-color: white;
+   background-color: transparent;
 
    box-sizing: border-box;
+   overflow: hidden;
 }
 
 .selected {
    outline: 2px solid red;
+}
+
+/* Edit Mode */
+.page.edit-mode .view {
+   display: none;
+}
+
+/* View Mode */
+.page.view-mode .edit {
+   display: none;
+}
+
+.page.view-mode .cell {
+   outline: none;
+   border: none;
 }

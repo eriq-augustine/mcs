@@ -4,7 +4,8 @@ var mcs = mcs || {};
 mcs.main = mcs.main || {};
 
 // TODO(eriq): Custom filenames.
-mcs.main.FILENAME = 'character_sheet.mcs'
+mcs.main.BASE_FILENAME = 'character_sheet'
+mcs.main.FILENAME = mcs.main.BASE_FILENAME + '.mcs'
 
 mcs.main.pages = mcs.main.pages || new Map();
 
@@ -182,7 +183,7 @@ function addCell(cell, pageId) {
    }
 
    mcs.main.cells.set(id, cell);
-   $(`.page-pane .sheet-page-${pageId}`).append(cell.getDiv());
+   $(`.page-pane .sheet-page-${pageId}`).append(cell.getEditElement());
 
    mcs.util.makeDragable(cell);
 }
@@ -263,6 +264,64 @@ function download() {
 }
 
 function viewMode() {
-   // TODO(eriq)
-   console.log("View Mode");
+   $('.page').removeClass('edit-mode');
+   $('.page').addClass('view-mode');
+
+   // Replace all cells with display versions.
+   $('.cell').remove();
+
+   for (let cell of mcs.main.cells.values()) {
+      $(`.page-pane .sheet-page-${cell.page}`).append(cell.getViewElement());
+   }
+}
+
+function editMode() {
+   $('.page').removeClass('view-mode');
+   $('.page').addClass('edit-mode');
+
+   // Replace all cells with edit versions.
+   $('.cell').remove();
+
+   for (let cell of mcs.main.cells.values()) {
+      $(`.page-pane .sheet-page-${cell.page}`).append(cell.getEditElement());
+      mcs.util.makeDragable(cell);
+   }
+}
+
+function evalSheet() {
+   let results = mcs.eval.evaluateCells(mcs.main.cells);
+
+   // TODO(eriq);
+
+   // TEST
+   console.log(results);
+}
+
+function print() {
+   // First convert each sheet page to a Canvas.
+   // Then get the data URL for the all the canvases and print them.
+   let images = new Map();
+
+   for (let page of mcs.main.pages.values()) {
+      let pageElement = document.querySelector(`.sheet-page-${page.id}`);
+      html2canvas(pageElement).then(function(canvas) {
+         images.set(page.id, canvas.toDataURL());
+
+         // Got all the pages.
+         if (images.size == mcs.main.pages.size) {
+            let urls = [];
+            for (let imageUrl of images.values()) {
+               urls.push(imageUrl);
+            }
+
+            let options = {
+               printable: urls,
+               type: 'image',
+               documentTitle: mcs.main.BASE_FILENAME
+            };
+
+            printJS(options);
+         }
+      });
+   }
 }

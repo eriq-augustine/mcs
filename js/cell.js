@@ -29,25 +29,45 @@ mcs.cell.Cell = class {
       return mcs.cell.selector(this.id);
    };
 
-   // Get a div that represents this cell.
+   // Get an element that represents this cell in edit mode.
    // For use on the sheet itself (not context panel).
-   getDiv() {
-      let div = document.createElement('div');
-      div.className = 'cell';
+   getEditElement() {
+      let element = document.createElement('div');
+      element.innerHTML = this.value;
 
-      div.setAttribute('data-id', this.id);
-      div.innerHTML = this.value;
-
-      div.style.width = this.width;
-      div.style.height = this.height;
-
-      div.style.webkitTransform = 'translate(' + this.x + 'px,' + this.y + 'px)';
-      div.style.transform = 'translate(' + this.x + 'px,' + this.y + 'px)';
-
-      div.setAttribute('onClick', 'selectCell(' + this.id + ');');
-
-      return div;
+      return this._getElementInternal(element);
    };
+
+   // Get an element that represents this cell in view mode.
+   // For use on the sheet itself (not context panel).
+   // Set all display values as defaults, real values will be populated after evaluation.
+   getViewElement() {
+      let element;
+      if (this.locked) {
+         element = document.createElement('div');
+         element.innerHTML = '?';
+      } else {
+         element = document.createElement('input');
+         element.setAttribute('type', 'text');
+         element.value = '?';
+      }
+
+      return this._getElementInternal(element);
+   };
+
+   _getElementInternal(baseElement) {
+      baseElement.className = 'cell';
+
+      baseElement.setAttribute('data-id', this.id);
+
+      baseElement.style.width = this.width;
+      baseElement.style.height = this.height;
+
+      baseElement.style.webkitTransform = 'translate(' + this.x + 'px,' + this.y + 'px)';
+      baseElement.style.transform = 'translate(' + this.x + 'px,' + this.y + 'px)';
+
+      return baseElement;
+   }
 
    // Not an actual form, but just a bunch of fields that represent this cell.
    // Return: [{labelText, field, prefix}, ...]
