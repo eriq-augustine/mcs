@@ -45,15 +45,15 @@ mcs.cell.Cell = class {
    // For use on the sheet itself (not context panel).
    // Set all display values as defaults, real values will be populated after evaluation.
    getViewElement() {
-      let element;
+      let element = document.createElement('input');
+      element.setAttribute('type', 'text');
+      element.value = '?';
+
       if (this.locked) {
-         element = document.createElement('div');
-         element.innerHTML = '?';
-      } else {
-         element = document.createElement('input');
-         element.setAttribute('type', 'text');
-         element.value = '?';
+         element.disabled = true;
       }
+
+      element.style.lineHeight = this.height;
 
       return this._getElementInternal(element);
    };

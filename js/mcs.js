@@ -271,6 +271,8 @@ function viewMode() {
    // Replace all cells with display versions.
    $('.cell').remove();
 
+   // TODO(eriq): Better error handling.
+
    for (let cell of mcs.main.cells.values()) {
       $(`.page-pane .sheet-page-${cell.page}`).append(cell.getViewElement());
    }
@@ -294,7 +296,8 @@ function evalSheet() {
 
    // Fill the display cells with their evaluated values.
    for (let [id, result] of results.entries()) {
-      $(mcs.main.cells.get(id).getSelector()).val(result).html(result);
+      let cell = mcs.main.cells.get(id);
+      $(cell.getSelector()).val(result);
    }
 }
 
@@ -310,9 +313,9 @@ function print() {
 
          // Got all the pages.
          if (images.size == mcs.main.pages.size) {
-            let urls = [];
-            for (let imageUrl of images.values()) {
-               urls.push(imageUrl);
+            let urls = new Array(images.size);
+            for (let [id, imageUrl] of images.entries()) {
+               urls[id] = imageUrl;
             }
 
             let options = {
