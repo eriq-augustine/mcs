@@ -51,6 +51,13 @@ mcs.cell.Cell = class {
 
       if (this.locked) {
          element.disabled = true;
+      } else {
+         let inputFunction = function(event) {
+            this.value = event.target.value;
+         }
+
+         // Make the cell |this| instead of the div.
+         element.oninput = inputFunction.bind(this);
       }
 
       element.style.lineHeight = this.height;
