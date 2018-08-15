@@ -236,7 +236,7 @@ function addCellContextButtons(cell) {
 }
 
 function saveCell(id) {
-   // TODO(eriq): Validate. eg. name conflict.
+   // TODO(eriq): Validate. eg. name conflict, side effect format.
 
    let cell = mcs.main.cells.get(id);
 
@@ -244,6 +244,7 @@ function saveCell(id) {
    cell.value = $('.cell-context .context-value').val();
    cell.locked = $('.cell-context .context-locked').prop('checked');
    cell.evaluate = $('.cell-context .context-evaluate').prop('checked');
+   cell.sideEffects = JSON.parse($('.cell-context .context-sideeffects').val());
 
    $(cell.getSelector()).html(cell.value);
 }

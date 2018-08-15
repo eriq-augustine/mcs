@@ -7,7 +7,7 @@ mcs.cell.DEFAULT_CELL_WIDTH = 50;
 mcs.cell.DEFAULT_CELL_HEIGHT = 50;
 
 mcs.cell.Cell = class {
-   constructor({id, page = 0, name = '', value = '',
+   constructor({id, page = 0, name = '', value = '', sideEffects = [],
          locked = false, evaluate = false,
          width = mcs.cell.DEFAULT_CELL_WIDTH, height = mcs.cell.DEFAULT_CELL_HEIGHT, x = 0, y = 0}) {
       if (mcs.util.nil(id)) {
@@ -19,6 +19,8 @@ mcs.cell.Cell = class {
 
       this.name = name;
       this.value = value;
+      this.sideEffects = sideEffects;
+
       this.locked = locked;
       this.evaluate = evaluate;
       this.width = width;
@@ -60,8 +62,6 @@ mcs.cell.Cell = class {
          element.oninput = inputFunction.bind(this);
       }
 
-      element.style.lineHeight = this.height;
-
       return this._getElementInternal(element);
    };
 
@@ -72,6 +72,8 @@ mcs.cell.Cell = class {
 
       baseElement.style.width = this.width;
       baseElement.style.height = this.height;
+
+      baseElement.style.lineHeight = this.height;
 
       baseElement.style.webkitTransform = 'translate(' + this.x + 'px,' + this.y + 'px)';
       baseElement.style.transform = 'translate(' + this.x + 'px,' + this.y + 'px)';
@@ -115,6 +117,14 @@ mcs.cell.Cell = class {
       evaluateField.checked = this.evaluate;
       evaluateField.setAttribute('data-id', this.id);
       form.push({labelText: 'Evaluate', field: evaluateField});
+
+      // TODO(eriq): Make a real UI for this instead of using JSON.
+      var sideEffectsField = document.createElement('input');
+      sideEffectsField.className = 'context-sideeffects';
+      sideEffectsField.setAttribute('type', 'text');
+      sideEffectsField.value = JSON.stringify(this.sideEffects);
+      sideEffectsField.setAttribute('data-id', this.id);
+      form.push({labelText: 'Side Effects', field: sideEffectsField});
 
       return form;
    };
