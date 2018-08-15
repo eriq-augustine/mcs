@@ -170,11 +170,11 @@ function fillPageContext(pageId) {
 function addCell(cell, pageId) {
    let id;
 
-   // Offset so even if we are scrolling, the box appears in the top left.
-   let x = $(`.sheet-page-${pageId}`).get(0).scrollLeft;
-   let y = Math.max(0, window.pageYOffset - $(`.sheet-page-${pageId}`).get(0).offsetTop + $('.top-bar').height());
-
    if (mcs.util.nil(cell)) {
+      // Offset so even if we are scrolling, the box appears in the top left.
+      let x = $(`.sheet-page-${pageId}`).get(0).scrollLeft;
+      let y = Math.max(0, window.pageYOffset - $(`.sheet-page-${pageId}`).get(0).offsetTop + $('.top-bar').height());
+
       id = mcs.main.cells.size;
       cell = new mcs.cell.Cell({id: id, page: pageId, x: x, y: y});
    } else {
