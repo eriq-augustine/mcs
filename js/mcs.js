@@ -4,7 +4,8 @@ var mcs = mcs || {};
 mcs.main = mcs.main || {};
 
 // TODO(eriq): Custom filenames.
-mcs.main.FILENAME = 'character_sheet.mcs'
+mcs.main.BASE_FILENAME = 'character_sheet'
+mcs.main.FILENAME = mcs.main.BASE_FILENAME + '.mcs'
 
 mcs.main.pages = mcs.main.pages || new Map();
 
@@ -186,7 +187,7 @@ function addCell(cell, pageId) {
    }
 
    mcs.main.cells.set(id, cell);
-   $(`.page-pane .sheet-page-${pageId}`).append(cell.getDiv());
+   $(`.page-pane .sheet-page-${pageId}`).append(cell.getEditElement());
 
    mcs.util.makeDragable(cell);
 }
@@ -242,6 +243,7 @@ function saveCell(id) {
    cell.name = $('.cell-context .context-name').val();
    cell.value = $('.cell-context .context-value').val();
    cell.locked = $('.cell-context .context-locked').prop('checked');
+   cell.evaluate = $('.cell-context .context-evaluate').prop('checked');
 
    $(cell.getSelector()).html(cell.value);
 }
@@ -267,6 +269,67 @@ function download() {
 }
 
 function viewMode() {
-   // TODO(eriq)
-   console.log("View Mode");
+   $('.page').removeClass('edit-mode');
+   $('.page').addClass('view-mode');
+
+   // Replace all cells with display versions.
+   $('.cell').remove();
+
+   // TODO(eriq): Better error handling.
+
+   for (let cell of mcs.main.cells.values()) {
+      $(`.page-pane .sheet-page-${cell.page}`).append(cell.getViewElement());
+   }
+}
+
+function editMode() {
+   $('.page').removeClass('view-mode');
+   $('.page').addClass('edit-mode');
+
+   // Replace all cells with edit versions.
+   $('.cell').remove();
+
+   for (let cell of mcs.main.cells.values()) {
+      $(`.page-pane .sheet-page-${cell.page}`).append(cell.getEditElement());
+      mcs.util.makeDragable(cell);
+   }
+}
+
+function evalSheet() {
+   let results = mcs.eval.evaluateCells(mcs.main.cells);
+
+   // Fill the display cells with their evaluated values.
+   for (let [id, result] of results.entries()) {
+      let cell = mcs.main.cells.get(id);
+      $(cell.getSelector()).val(result);
+   }
+}
+
+function print() {
+   // First convert each sheet page to a Canvas.
+   // Then get the data URL for the all the canvases and print them.
+   let images = new Map();
+
+   for (let page of mcs.main.pages.values()) {
+      let pageElement = document.querySelector(`.sheet-page-${page.id}`);
+      html2canvas(pageElement).then(function(canvas) {
+         images.set(page.id, canvas.toDataURL());
+
+         // Got all the pages.
+         if (images.size == mcs.main.pages.size) {
+            let urls = new Array(images.size);
+            for (let [id, imageUrl] of images.entries()) {
+               urls[id] = imageUrl;
+            }
+
+            let options = {
+               printable: urls,
+               type: 'image',
+               documentTitle: mcs.main.BASE_FILENAME
+            };
+
+            printJS(options);
+         }
+      });
+   }
 }

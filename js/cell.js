@@ -7,7 +7,8 @@ mcs.cell.DEFAULT_CELL_WIDTH = 50;
 mcs.cell.DEFAULT_CELL_HEIGHT = 50;
 
 mcs.cell.Cell = class {
-   constructor({id, page = 0, name = '', value = '', locked = false,
+   constructor({id, page = 0, name = '', value = '',
+         locked = false, evaluate = false,
          width = mcs.cell.DEFAULT_CELL_WIDTH, height = mcs.cell.DEFAULT_CELL_HEIGHT, x = 0, y = 0}) {
       if (mcs.util.nil(id)) {
          throw "Cell id must be real.";
@@ -19,6 +20,7 @@ mcs.cell.Cell = class {
       this.name = name;
       this.value = value;
       this.locked = locked;
+      this.evaluate = evaluate;
       this.width = width;
       this.height = height;
       this.x = x;
@@ -29,25 +31,53 @@ mcs.cell.Cell = class {
       return mcs.cell.selector(this.id);
    };
 
-   // Get a div that represents this cell.
+   // Get an element that represents this cell in edit mode.
    // For use on the sheet itself (not context panel).
-   getDiv() {
-      let div = document.createElement('div');
-      div.className = 'cell';
+   getEditElement() {
+      let element = document.createElement('div');
+      element.innerHTML = this.value;
+      element.setAttribute('onClick', 'selectCell(' + this.id + ');');
 
-      div.setAttribute('data-id', this.id);
-      div.innerHTML = this.value;
-
-      div.style.width = this.width;
-      div.style.height = this.height;
-
-      div.style.webkitTransform = 'translate(' + this.x + 'px,' + this.y + 'px)';
-      div.style.transform = 'translate(' + this.x + 'px,' + this.y + 'px)';
-
-      div.setAttribute('onClick', 'selectCell(' + this.id + ');');
-
-      return div;
+      return this._getElementInternal(element);
    };
+
+   // Get an element that represents this cell in view mode.
+   // For use on the sheet itself (not context panel).
+   // Set all display values as defaults, real values will be populated after evaluation.
+   getViewElement() {
+      let element = document.createElement('input');
+      element.setAttribute('type', 'text');
+      element.value = '?';
+
+      if (this.locked) {
+         element.disabled = true;
+      } else {
+         let inputFunction = function(event) {
+            this.value = event.target.value;
+         }
+
+         // Make the cell |this| instead of the div.
+         element.oninput = inputFunction.bind(this);
+      }
+
+      element.style.lineHeight = this.height;
+
+      return this._getElementInternal(element);
+   };
+
+   _getElementInternal(baseElement) {
+      baseElement.className = 'cell';
+
+      baseElement.setAttribute('data-id', this.id);
+
+      baseElement.style.width = this.width;
+      baseElement.style.height = this.height;
+
+      baseElement.style.webkitTransform = 'translate(' + this.x + 'px,' + this.y + 'px)';
+      baseElement.style.transform = 'translate(' + this.x + 'px,' + this.y + 'px)';
+
+      return baseElement;
+   }
 
    // Not an actual form, but just a bunch of fields that represent this cell.
    // Return: [{labelText, field, prefix}, ...]
@@ -78,6 +108,13 @@ mcs.cell.Cell = class {
       lockedField.checked = this.locked;
       lockedField.setAttribute('data-id', this.id);
       form.push({labelText: 'Locked', field: lockedField});
+
+      var evaluateField = document.createElement('input');
+      evaluateField.className = 'context-evaluate';
+      evaluateField.setAttribute('type', 'checkbox');
+      evaluateField.checked = this.evaluate;
+      evaluateField.setAttribute('data-id', this.id);
+      form.push({labelText: 'Evaluate', field: evaluateField});
 
       return form;
    };
