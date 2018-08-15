@@ -12,6 +12,7 @@ mcs.main.pages = mcs.main.pages || new Map();
 // All the cells on the sheet.
 // Keeping it as a map makes JSON operations harder, but is more robust in the end.
 mcs.main.cells = mcs.main.cells || new Map();
+mcs.main.nextCellId = mcs.main.nextCellId || 0;
 
 mcs.main.selectedPage = mcs.main.selectedPage || null;
 mcs.main.selectedCell = mcs.main.selectedCell || null;
@@ -30,6 +31,7 @@ function clickLoadSheet() {
 
 function serialize() {
    let dump = {
+      nextCellId: mcs.main.nextCellId,
       pages: [...mcs.main.pages],
       cells: [...mcs.main.cells]
    };
@@ -41,6 +43,8 @@ function deserialize(text) {
    let data = JSON.parse(text);
 
    // TODO(eriq): Clear existing.
+
+   mcs.main.nextCellId = data.nextCellId;
 
    let pages = new Map(data.pages);
    for (let rawPage of pages.values()) {
@@ -175,11 +179,16 @@ function addCell(cell, pageId) {
       let x = $(`.sheet-page-${pageId}`).get(0).scrollLeft;
       let y = Math.max(0, window.pageYOffset - $(`.sheet-page-${pageId}`).get(0).offsetTop + $('.top-bar').height());
 
-      id = mcs.main.cells.size;
+      id = mcs.main.nextCellId;
+      mcs.main.nextCellId++;
       cell = new mcs.cell.Cell({id: id, page: pageId, x: x, y: y});
    } else {
       id = cell.id;
       pageId = cell.page;
+   }
+
+   if (id > mcs.main.nextCellId) {
+      mcs.main.nextCellId = id + 1;
    }
 
    if (mcs.util.nil(pageId)) {
@@ -207,7 +216,6 @@ function selectCell(id) {
 
 function fillCellContext(cell) {
    $('.cell-context').empty();
-   addCellContextButtons(cell);
 
    cell.getDetailsForm().forEach(function({labelText, field, prefix = ''}) {
       if (mcs.util.nil(field)) {
@@ -228,39 +236,19 @@ function fillCellContext(cell) {
 
       $('.cell-context').append(wrap);
    });
+
+   let deleteButton = document.createElement('button');
+   deleteButton.innerHTML = 'Delete Cell';
+   deleteButton.setAttribute('onClick', 'deleteCell(' + cell.id + ');');
+   $('.cell-context').append(deleteButton);
 }
 
-function addCellContextButtons(cell) {
-   let saveButton = document.createElement('button');
-   saveButton.innerHTML = 'Save';
-   saveButton.setAttribute('onClick', 'saveCell(' + cell.id + ');');
-   $('.cell-context').append(saveButton);
-
-   let clearButton = document.createElement('button');
-   clearButton.innerHTML = 'Clear';
-   clearButton.setAttribute('onClick', 'clearCell(' + cell.id + ');');
-   $('.cell-context').append(clearButton);
-}
-
-function saveCell(id) {
-   // TODO(eriq): Validate. eg. name conflict, side effect format.
-
+function deleteCell(id) {
    let cell = mcs.main.cells.get(id);
 
-   cell.name = $('.cell-context .context-name').val();
-   cell.value = $('.cell-context .context-value').val();
-   cell.locked = $('.cell-context .context-locked').prop('checked');
-   cell.evaluate = $('.cell-context .context-evaluate').prop('checked');
-   cell.sideEffects = JSON.parse($('.cell-context .context-sideeffects').val());
-
-   $(cell.getSelector()).html(cell.value);
-}
-
-function clearCell(id) {
-   let cell = mcs.main.cells.get(id);
-
-   // TODO(eriq)
-   console.log("TODO(eriq): clearCell.");
+   // Get rid of any display elements.
+   $(cell.getSelector()).remove();
+   mcs.main.cells.delete(id);
 }
 
 function download() {

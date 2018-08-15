@@ -95,6 +95,10 @@ mcs.cell.Cell = class {
       nameField.setAttribute('type', 'text');
       nameField.value = this.name;
       nameField.setAttribute('data-id', this.id);
+      nameField.oninput = function(event) {
+         // TODO(eriq): Validate name conflicts.
+         this.name = event.target.value;
+      }.bind(this);
       form.push({labelText: 'Name', field: nameField, prefix: '#'});
 
       var valueField = document.createElement('input');
@@ -102,6 +106,12 @@ mcs.cell.Cell = class {
       valueField.setAttribute('type', 'text');
       valueField.value = this.value;
       valueField.setAttribute('data-id', this.id);
+      valueField.oninput = function(event) {
+         this.value = event.target.value;
+
+         // If there is a div out there, update it.
+         $(this.getSelector()).html(this.value);
+      }.bind(this);
       form.push({labelText: 'Value', field: valueField});
 
       var lockedField = document.createElement('input');
@@ -109,6 +119,9 @@ mcs.cell.Cell = class {
       lockedField.setAttribute('type', 'checkbox');
       lockedField.checked = this.locked;
       lockedField.setAttribute('data-id', this.id);
+      lockedField.oninput = function(event) {
+         this.locked = event.target.checked;
+      }.bind(this);
       form.push({labelText: 'Locked', field: lockedField});
 
       var evaluateField = document.createElement('input');
@@ -116,6 +129,9 @@ mcs.cell.Cell = class {
       evaluateField.setAttribute('type', 'checkbox');
       evaluateField.checked = this.evaluate;
       evaluateField.setAttribute('data-id', this.id);
+      evaluateField.oninput = function(event) {
+         this.evaluate = event.target.checked;
+      }.bind(this);
       form.push({labelText: 'Evaluate', field: evaluateField});
 
       // TODO(eriq): Make a real UI for this instead of using JSON.
@@ -124,6 +140,15 @@ mcs.cell.Cell = class {
       sideEffectsField.setAttribute('type', 'text');
       sideEffectsField.value = JSON.stringify(this.sideEffects);
       sideEffectsField.setAttribute('data-id', this.id);
+      sideEffectsField.oninput = function(event) {
+         // TODO(eriq): Validate.
+         try {
+            this.sideEffects = JSON.parse(event.target.value);
+         } catch (error) {
+            // Ignore for now.
+            // Just don't save, the user may have not finished typing.
+         }
+      }.bind(this);
       form.push({labelText: 'Side Effects', field: sideEffectsField});
 
       return form;
