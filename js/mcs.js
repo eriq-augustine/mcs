@@ -142,7 +142,7 @@ function selectPage(pageId) {
 function fillPageContext(pageId) {
    $('.page-context').empty();
 
-   let pageHeader = document.createElement('h3');
+   let pageHeader = document.createElement('span');
    pageHeader.innerHTML = `Page: ${pageId}`;
    $('.page-context').append(pageHeader);
 
@@ -210,6 +210,13 @@ function fillCellContext(cell) {
    addCellContextButtons(cell);
 
    cell.getDetailsForm().forEach(function({labelText, field, prefix = ''}) {
+      if (mcs.util.nil(field)) {
+         let span = document.createElement('span');
+         span.innerHTML = labelText;
+         $('.cell-context').append(span);
+         return;
+      }
+
       let label = document.createElement('label');
       label.innerHTML = labelText + ': ' + prefix;
 

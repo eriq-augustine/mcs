@@ -88,7 +88,7 @@ mcs.cell.Cell = class {
 
       let idField = document.createElement('span');
       idField.innerHTML = '$' + this.id;
-      form.push({labelText: 'ID', field: idField});
+      form.push({labelText: `ID: \$${this.id}`})
 
       var nameField = document.createElement('input');
       nameField.className = 'context-name';
