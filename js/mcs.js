@@ -18,7 +18,7 @@ mcs.main.selectedPage = mcs.main.selectedPage || null;
 mcs.main.selectedCell = mcs.main.selectedCell || null;
 
 $(document).ready(function() {
-   document.getElementById('sheet-load').addEventListener('change', handleSheetFileSelect, false);
+   document.getElementById('sheet-load').onchange = handleSheetFileSelect;
 });
 
 function clickUploadBackground(pageId) {
@@ -42,7 +42,7 @@ function serialize() {
 function deserialize(text) {
    let data = JSON.parse(text);
 
-   // TODO(eriq): Clear existing.
+   clearSheet();
 
    mcs.main.nextCellId = data.nextCellId;
 
@@ -58,8 +58,28 @@ function deserialize(text) {
    }
 }
 
+function clearSheet() {
+   // Clear state.
+   mcs.main.pages = new Map();
+
+   mcs.main.cells = new Map();
+   mcs.main.nextCellId = 0;
+
+   mcs.main.selectedPage = null;
+   mcs.main.selectedCell = null;
+
+   // Clear display.
+   $('.cell-context').empty();
+   $('.page-context').empty();
+   $('.page-pane').empty();
+}
+
 function handleSheetFileSelect() {
    let files = document.getElementById('sheet-load').files;
+
+   if (files.length == 0) {
+      return;
+   }
 
    if (files.length != 1) {
       console.error("Wrong number of files. Expected 1, got " + files.length + ".");
@@ -70,6 +90,7 @@ function handleSheetFileSelect() {
 
    let reader = new FileReader();
    reader.onload = function(event) {
+      document.getElementById('sheet-load').value = null;
       deserialize(event.target.result);
    };
 
@@ -83,7 +104,6 @@ function handleBackgroundFileSelect(id) {
       return;
    }
 
-   // TODO(eriq): Handle multiple files.
    if (files.length > 1) {
       return;
    }
@@ -267,6 +287,12 @@ function download() {
 function viewMode() {
    $('.page').removeClass('edit-mode');
    $('.page').addClass('view-mode');
+
+   // Clear any selections.
+   mcs.main.selectedCell = null;
+   mcs.main.selectedPage = null;
+   $('.cell-context').empty();
+   $('.page-context').empty();
 
    // Replace all cells with display versions.
    $('.cell').remove();
