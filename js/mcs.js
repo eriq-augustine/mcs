@@ -3,10 +3,6 @@
 var mcs = mcs || {};
 mcs.main = mcs.main || {};
 
-// TODO(eriq): Custom filenames.
-mcs.main.BASE_FILENAME = 'character_sheet'
-mcs.main.FILENAME = mcs.main.BASE_FILENAME + '.mcs'
-
 mcs.main.sheetName = mcs.main.sheetName || 'Unnamed Sheet';
 mcs.main.pages = mcs.main.pages || new Map();
 
@@ -44,6 +40,7 @@ function deserialize(text) {
 
    mcs.main.sheetName = data.sheetName;
    $('.sheet-name').val(mcs.main.sheetName);
+   document.title = mcs.main.sheetName;
 
    mcs.main.nextCellId = data.nextCellId;
 
@@ -78,6 +75,7 @@ function clearSheet() {
 function changeSheetName(event) {
    mcs.main.sheetName = event.target.value;
    $('.sheet-name').val(mcs.main.sheetName);
+   document.title = mcs.main.sheetName;
 }
 
 function handleSheetFileSelect(event) {
@@ -282,7 +280,7 @@ function download() {
 
    let downloadLink = document.createElement('a');
    downloadLink.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(data));
-   downloadLink.setAttribute('download', mcs.main.FILENAME);
+   downloadLink.setAttribute('download', mcs.main.sheetName + '.mcs');
    downloadLink.style.display = 'none';
 
    document.body.appendChild(downloadLink);
@@ -353,7 +351,7 @@ function print() {
             let options = {
                printable: urls,
                type: 'image',
-               documentTitle: mcs.main.BASE_FILENAME
+               documentTitle: mcs.main.sheetName
             };
 
             printJS(options);
