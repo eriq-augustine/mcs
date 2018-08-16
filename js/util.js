@@ -27,7 +27,10 @@ mcs.util.setContains = function(set, ...values) {
    return true;
 }
 
-// This is only for cells.
+mcs.util.makeUndragable = function(cell) {
+   interact(cell.getSelector()).unset();
+}
+
 mcs.util.makeDragable = function(cell) {
    interact(cell.getSelector())
       .draggable({

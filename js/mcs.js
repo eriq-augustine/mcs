@@ -54,6 +54,8 @@ function deserialize(text) {
       let cell = new mcs.cell.Cell(rawCell);
       addCell(cell);
    }
+
+   viewMode();
 }
 
 function clearSheet() {
@@ -305,6 +307,7 @@ function viewMode() {
 
    for (let cell of mcs.main.cells.values()) {
       $(`.page-pane .sheet-page-${cell.page}`).append(cell.getViewElement());
+      mcs.util.makeUndragable(cell);
    }
 }
 
