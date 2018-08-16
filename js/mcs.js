@@ -7,6 +7,7 @@ mcs.main = mcs.main || {};
 mcs.main.BASE_FILENAME = 'character_sheet'
 mcs.main.FILENAME = mcs.main.BASE_FILENAME + '.mcs'
 
+mcs.main.sheetName = mcs.main.sheetName || 'Unnamed Sheet';
 mcs.main.pages = mcs.main.pages || new Map();
 
 // All the cells on the sheet.
@@ -17,21 +18,18 @@ mcs.main.nextCellId = mcs.main.nextCellId || 0;
 mcs.main.selectedPage = mcs.main.selectedPage || null;
 mcs.main.selectedCell = mcs.main.selectedCell || null;
 
-$(document).ready(function() {
-   document.getElementById('sheet-load').onchange = handleSheetFileSelect;
-});
-
 function clickUploadBackground(pageId) {
    $(`.background-upload-button-${pageId}`).click();
 }
 
 function clickLoadSheet() {
-   $('#sheet-load').click();
+   $('.load-sheet.hidden-upload-button').click();
 }
 
 function serialize() {
    let dump = {
       nextCellId: mcs.main.nextCellId,
+      sheetName: mcs.main.sheetName,
       pages: [...mcs.main.pages],
       cells: [...mcs.main.cells]
    };
@@ -43,6 +41,9 @@ function deserialize(text) {
    let data = JSON.parse(text);
 
    clearSheet();
+
+   mcs.main.sheetName = data.sheetName;
+   $('.sheet-name').val(mcs.main.sheetName);
 
    mcs.main.nextCellId = data.nextCellId;
 
@@ -74,8 +75,13 @@ function clearSheet() {
    $('.page-pane').empty();
 }
 
-function handleSheetFileSelect() {
-   let files = document.getElementById('sheet-load').files;
+function changeSheetName(event) {
+   mcs.main.sheetName = event.target.value;
+   $('.sheet-name').val(mcs.main.sheetName);
+}
+
+function handleSheetFileSelect(event) {
+   let files = document.querySelector('.load-sheet.hidden-upload-button').files;
 
    if (files.length == 0) {
       return;
@@ -90,7 +96,7 @@ function handleSheetFileSelect() {
 
    let reader = new FileReader();
    reader.onload = function(event) {
-      document.getElementById('sheet-load').value = null;
+      document.querySelector('.load-sheet.hidden-upload-button').value = null;
       deserialize(event.target.result);
    };
 

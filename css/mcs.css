@@ -4,25 +4,25 @@
 
 /* DEBUG */
 .top-bar {
-   background-color: orange;
+   background-color: white;
 }
 .sheet-context {
-   background-color: pink;
+   background-color: white
 }
 .cell-context {
-   background-color: green;
+   background-color: white;
 }
 .page-pane {
-   background-color: blue;
+   background-color: #eeeeee;
 }
 .page-context {
-   background-color: yellow;
+   background-color: white;
 }
 .footer {
    background-color: grey;
 }
 .sheet-page {
-   background-color: black;
+   background-color: white;
 }
 
 /* Top bar */
@@ -33,6 +33,7 @@
    top: 0;
    left: 0;
    z-index: 15;
+   box-shadow: 0 1px 1px #444;
 }
 
 .context-bar {
@@ -47,6 +48,28 @@
 .context-bar .context-wrap {
    margin-top: 10px;
    margin-bottom: 10px;
+   background-color: transparent;
+   padding: 10px;
+   font-weight: bold;
+   color: #757575;
+   border: none;
+   outline: none;
+}
+
+.context-bar button {
+   border-radius: 10px;
+}
+
+.context-bar button:hover {
+   background-color: #eeeeee;
+}
+
+.context-bar input[type='text'] {
+   background-color: #eeeeee;
+}
+
+.sheet-name {
+   width: 300px;
 }
 
 .sheet-context {
@@ -81,6 +104,7 @@
    min-width: 100px;
    min-height: 100px;
    display: inline-block;
+   box-shadow: 3px 3px 5px #444;
 }
 
 .background-image {

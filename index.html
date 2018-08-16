@@ -1,55 +1,43 @@
 <html>
    <head>
       <title>MCS</title>
-      <link rel="stylesheet" type="text/css" media="all" href="css/reset.css">
-      <link rel="stylesheet" type="text/css" media="all" href="css/mcs.css">
-      <script type="text/javascript" src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
-      <script type="text/javascript" src="js/vendor/interact.min.js"></script>
+      <link rel='stylesheet' type='text/css' media='all' href='css/reset.css'>
+      <link rel='stylesheet' type='text/css' media='all' href='css/mcs.css'>
+      <script type='text/javascript' src='https://code.jquery.com/jquery-3.3.1.min.js'></script>
+      <script type='text/javascript' src='js/vendor/interact.min.js'></script>
 
-      <script type="text/javascript" src="js/vendor/html2canvas.min.js"></script>
-      <link rel="stylesheet" type="text/css" media="all" href="js/vendor/printjs/print.min.css">
-      <script type="text/javascript" src="js/vendor/printjs/print.min.js"></script>
+      <script type='text/javascript' src='js/vendor/html2canvas.min.js'></script>
+      <link rel='stylesheet' type='text/css' media='all' href='js/vendor/printjs/print.min.css'>
+      <script type='text/javascript' src='js/vendor/printjs/print.min.js'></script>
 
-      <script type="text/javascript" src="js/util.js"></script>
-      <script type="text/javascript" src="js/cell.js"></script>
-      <script type="text/javascript" src="js/eval.js"></script>
-      <script type="text/javascript" src="js/mcs.js"></script>
+      <script type='text/javascript' src='js/util.js'></script>
+      <script type='text/javascript' src='js/cell.js'></script>
+      <script type='text/javascript' src='js/eval.js'></script>
+      <script type='text/javascript' src='js/mcs.js'></script>
    </head>
    <body>
       <div class='page edit-mode'>
          <div class='top-bar'>
-            <div class='edit-bar edit'>
-               <div class='context-bar sheet-context'>
-                  <button class='add-page-button' onClick='addPage({})'>Add Page</button>
+            <div class='context-bar sheet-context'>
+               <input type='text' class='sheet-name' placeholder='Sheet Name' value='Unnamed Sheet' onchange='changeSheetName(event)' >
 
-                  <input type="file" id='sheet-load' class='hidden-upload-button' accept='.mcs' />
-                  <button class='choose-sheet-button' onClick='clickLoadSheet()'>Load Sheet</button>
+               <input type='file' class='hidden-upload-button load-sheet' accept='.mcs' onchange='handleSheetFileSelect()' >
+               <button class='choose-sheet-button' onClick='clickLoadSheet()'>Load Sheet</button>
 
-                  <button class='download-button' onClick='download()'>Download</button>
-                  <button class='view-mode-button' onClick='viewMode()'>View Mode</button>
-               </div>
+               <button class='add-page-button edit' onClick='addPage({})'>Add Page</button>
+               <button class='eval-button view' onClick='evalSheet()'>Eval Cells</button>
 
-               <div class='context-bar page-context'>
-               </div>
+               <button class='download-button' onClick='download()'>Download</button>
+               <button class='print-button view' onClick='print()'>Print</button>
 
-               <div class='context-bar cell-context'>
-               </div>
+               <button class='view-mode-button edit' onClick='viewMode()'>View Mode</button>
+               <button class='edit-mode-button view' onClick='editMode()'>Edit Mode</button>
             </div>
-            <div class='view-bar view'>
-               <div class='context-bar view-context'>
-                  <span class='sheet-title'>
-                     TODO(eriq): Sheet Title
-                  </span>
 
-                  <button class='eval-button' onClick='evalSheet()'>Eval Cells</button>
+            <div class='context-bar page-context'>
+            </div>
 
-                  <input type="file" id='sheet-load' class='hidden-upload-button' accept='.mcs' />
-                  <button class='choose-sheet-button' onClick='clickLoadSheet()'>Load Sheet</button>
-
-                  <button class='download-button' onClick='download()'>Download</button>
-                  <button class='print-button' onClick='print()'>Print</button>
-                  <button class='edit-mode-button' onClick='editMode()'>Edit Mode</button>
-               </div>
+            <div class='context-bar cell-context'>
             </div>
          </div>
 
