@@ -3,9 +3,8 @@
 var mcs = mcs || {};
 mcs.eval = mcs.eval || {};
 
-// TODO(eriq): Tighten up the boundaries.
-mcs.eval.IDS_REGEX = /\$\d+/g;
-mcs.eval.NAMES_REGEX = /#\w+/g;
+mcs.eval.IDS_REGEX = /\$\d+(?=$|\D)/g;
+mcs.eval.NAMES_REGEX = /#\w+(?=$|\W)/g;
 
 // We deal with cell side effects by applying the effect directly to the target.
 // The effect author is responsible for making sure the target is used in the effect if it is meant to be an update.
@@ -42,7 +41,7 @@ mcs.eval.evaluateCells = function(cells) {
 
          let evaluation = evalInfo.value;
          if (evalInfo.evaluate) {
-            evaluation = mcs.eval.evaluateExpression(evalInfo.value, resolvedCells);
+            evaluation = mcs.eval.evaluateExpression(cells.get(id), evalInfo.value, resolvedCells);
          }
 
          resolvedCells.set(id, evaluation);
@@ -115,8 +114,7 @@ mcs.eval.applySideEffects = function(id, value, sideEffects) {
 
    for (let sideEffect of sideEffects.get(id)) {
       let oldValue = value;
-      // TODO(eriq): More strict on word boundaries.
-      value = sideEffect.replace(new RegExp(`\\$${id}`, 'g'), oldValue);
+      value = sideEffect.replace(new RegExp(`\\$${id}(?=$|\\D)`, 'g'), oldValue);
    }
 
    return value;
@@ -171,7 +169,7 @@ mcs.eval.buildNameToIdMap = function(cells) {
    return nameToId;
 }
 
-mcs.eval.evaluateExpression = function(value, resolvedCells) {
+mcs.eval.evaluateExpression = function(cell, value, resolvedCells) {
    // Extra strict because we actually use eval().
    'use strict';
 
@@ -179,9 +177,21 @@ mcs.eval.evaluateExpression = function(value, resolvedCells) {
    if (idsToReplace) {
       for (let idToReplace of idsToReplace) {
          let cleanId = parseInt(idToReplace.substr(1), 10);
-         value = value.replace(idToReplace, resolvedCells.get(cleanId));
+
+         // TODO(eriq): Default values for cells.
+         let replacementValue = resolvedCells.get(cleanId);
+         if (mcs.util.nil(replacementValue) || replacementValue == '') {
+            replacementValue = 0;
+         }
+
+         value = value.replace(idToReplace, replacementValue);
       }
    }
 
-   return eval(value);
+   try {
+      return eval(value);
+   } catch (error) {
+      console.error(`Failed to evalaute cell \$${cell.id} (#${cell.name}): {${value}}.`);
+      throw error;
+   }
 }
