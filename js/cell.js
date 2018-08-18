@@ -7,8 +7,8 @@ mcs.cell.DEFAULT_CELL_WIDTH = 50;
 mcs.cell.DEFAULT_CELL_HEIGHT = 50;
 
 mcs.cell.Cell = class {
-   constructor({id, page = 0, name = '', value = '', sideEffects = [],
-         locked = false, evaluate = false,
+   constructor({id, page = 0, name = '', value = '', defaultValue = 0,
+         sideEffects = [], locked = false, evaluate = false,
          width = mcs.cell.DEFAULT_CELL_WIDTH, height = mcs.cell.DEFAULT_CELL_HEIGHT, x = 0, y = 0}) {
       if (mcs.util.nil(id)) {
          throw "Cell id must be real.";
@@ -19,6 +19,7 @@ mcs.cell.Cell = class {
 
       this.name = name;
       this.value = value;
+      this.defaultValue = defaultValue;
       this.sideEffects = sideEffects;
 
       this.locked = locked;
@@ -133,6 +134,16 @@ mcs.cell.Cell = class {
          this.evaluate = event.target.checked;
       }.bind(this);
       form.push({labelText: 'Evaluate', field: evaluateField});
+
+      var defaultValueField = document.createElement('input');
+      defaultValueField.className = 'context-defaultValue';
+      defaultValueField.setAttribute('type', 'text');
+      defaultValueField.value = this.defaultValue;
+      defaultValueField.setAttribute('data-id', this.id);
+      defaultValueField.oninput = function(event) {
+         this.defaultValue = event.target.value;
+      }.bind(this);
+      form.push({labelText: 'Default Value', field: defaultValueField});
 
       // TODO(eriq): Make a real UI for this instead of using JSON.
       var sideEffectsField = document.createElement('input');

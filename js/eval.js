@@ -41,7 +41,7 @@ mcs.eval.evaluateCells = function(cells) {
 
          let evaluation = evalInfo.value;
          if (evalInfo.evaluate) {
-            evaluation = mcs.eval.evaluateExpression(cells.get(id), evalInfo.value, resolvedCells);
+            evaluation = mcs.eval.evaluateExpression(cells.get(id), cells, evalInfo.value, resolvedCells);
          }
 
          resolvedCells.set(id, evaluation);
@@ -169,7 +169,7 @@ mcs.eval.buildNameToIdMap = function(cells) {
    return nameToId;
 }
 
-mcs.eval.evaluateExpression = function(cell, value, resolvedCells) {
+mcs.eval.evaluateExpression = function(cell, allCells, value, resolvedCells) {
    // Extra strict because we actually use eval().
    'use strict';
 
@@ -178,10 +178,9 @@ mcs.eval.evaluateExpression = function(cell, value, resolvedCells) {
       for (let idToReplace of idsToReplace) {
          let cleanId = parseInt(idToReplace.substr(1), 10);
 
-         // TODO(eriq): Default values for cells.
          let replacementValue = resolvedCells.get(cleanId);
          if (mcs.util.nil(replacementValue) || replacementValue == '') {
-            replacementValue = 0;
+            replacementValue = allCells.get(cleanId).defaultValue;
          }
 
          value = value.replace(idToReplace, replacementValue);
